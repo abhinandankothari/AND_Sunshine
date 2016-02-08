@@ -35,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.container, new MainActivityFragment())
+//                    .commit();
+//        }
     }
 
     @Override
