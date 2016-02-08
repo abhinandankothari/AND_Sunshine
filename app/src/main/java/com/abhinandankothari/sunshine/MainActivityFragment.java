@@ -43,32 +43,26 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ArrayList<String> weather = new ArrayList<String>();
-        weather.add("Today - Sunny - 88/63");
-        weather.add("Tomorrow - Sunny - 88/63");
-        weather.add("Wed - Sunny - 88/63");
-        weather.add("Thurs - Sunny - 88/63");
-        weather.add("Friday - Sunny - 88/63");
-        weather.add("Sat - Sunny - 88/63");
-        weather.add("Sunday - Sunny - 88/63");
 
         arrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weather);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
         listView.setAdapter(arrayAdapter);
-//        new FetchWeatherTask().execute();
 
         return rootView;
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.forecast_layout, menu);
+        inflater.inflate(R.menu.forecast_fragment_menu, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if(id == R.id.action_refresh) {
+            FetchWeatherTask task = new FetchWeatherTask();
+            task.execute();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -89,7 +83,7 @@ public class MainActivityFragment extends Fragment {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
+                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7&appid=44db6a862fba0b067b1930da0d769e98");
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
