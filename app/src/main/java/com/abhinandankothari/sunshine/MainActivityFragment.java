@@ -11,8 +11,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -66,13 +69,18 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedgInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        ArrayList<String> weather = new ArrayList<String>();
+        List<String> weather = new ArrayList<String>();
 
         arrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weather);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
+        final ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
         listView.setAdapter(arrayAdapter);
-
+listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(getActivity(),arrayAdapter.getItem(position),Toast.LENGTH_SHORT).show();
+    }
+});
         return rootView;
     }
 
@@ -80,6 +88,13 @@ public class MainActivityFragment extends Fragment {
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
+        @Override
+        protected void onPostExecute(String[] weatherStrings) {
+            super.onPostExecute(weatherStrings);
+            arrayAdapter.clear();
+            arrayAdapter.addAll(weatherStrings);
+            arrayAdapter.notifyDataSetChanged();
+        }
 
         @Override
         protected String[] doInBackground(String... params) {
@@ -228,6 +243,6 @@ public class MainActivityFragment extends Fragment {
             Log.v(LOG_TAG, "Forecast entry: " + s);
         }
         return resultStrs;
-
     }
+
 }
