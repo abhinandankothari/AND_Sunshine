@@ -1,9 +1,11 @@
 package com.abhinandankothari.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,11 +61,30 @@ public class MainActivityFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if(id == R.id.action_refresh) {
-            FetchWeatherTask task = new FetchWeatherTask();
-            task.execute("560038","7");
+            refreshWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void refreshWeather() {
+        FetchWeatherTask task = new FetchWeatherTask();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String pinCode = sharedPref.getString("location", "560038");
+        String unit = sharedPref.getString("unit_list","0");
+        if (Integer.parseInt(unit) == 1)
+        {
+            task.execute(pinCode,"imperial", "7");
+        }
+        else {
+            task.execute(pinCode, "metric", "7");
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshWeather();
     }
 
     @Override
@@ -87,8 +108,6 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 });
         return rootView;
     }
-
-
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
@@ -122,8 +141,8 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         .appendPath("daily")
                         .appendQueryParameter("q",params[0])
                         .appendQueryParameter("mode","json")
-                        .appendQueryParameter("units","metric")
-                        .appendQueryParameter("cnt",params[1])
+                        .appendQueryParameter("units",params[1])
+                        .appendQueryParameter("cnt", params[2])
                         .appendQueryParameter("appid", "44db6a862fba0b067b1930da0d769e98");
                 URL url = new URL(builder.build().toString());
                 Log.v(LOG_TAG, "" + url.toString());
@@ -172,7 +191,7 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 }
             }
             try {
-                return getWeatherDataFromJson(forecastJsonStr,Integer.parseInt(params[1]));
+                return getWeatherDataFromJson(forecastJsonStr,Integer.parseInt(params[2]));
             }
             catch (JSONException ex)
             {
