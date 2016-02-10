@@ -1,5 +1,6 @@
 package com.abhinandankothari.sunshine;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -75,10 +76,13 @@ public class MainActivityFragment extends Fragment {
 
         final ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
         listView.setAdapter(arrayAdapter);
+
 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(getActivity(),arrayAdapter.getItem(position),Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(),arrayAdapter.getItem(position),Toast.LENGTH_SHORT).show();
+        Intent detail = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT,arrayAdapter.getItem(position));
+        startActivity(detail);
     }
 });
         return rootView;
