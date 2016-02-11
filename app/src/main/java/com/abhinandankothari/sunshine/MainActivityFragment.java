@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,8 +39,12 @@ import java.util.List;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
+    public static final String LOCATION = "location";
+    public static final String LOCATION_ZIP_CODE = "560038";
+    public static final String SEVEN_DAYS = "7";
     private ArrayAdapter<String> arrayAdapter;
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+
     public MainActivityFragment() {
 
     }
@@ -60,7 +63,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.action_refresh) {
+        if (id == R.id.action_refresh) {
             refreshWeather();
             return true;
         }
@@ -70,15 +73,9 @@ public class MainActivityFragment extends Fragment {
     private void refreshWeather() {
         FetchWeatherTask task = new FetchWeatherTask();
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String pinCode = sharedPref.getString("location", "560038");
-        String unit = sharedPref.getString("unit_list","0");
-        if (Integer.parseInt(unit) == 1)
-        {
-            task.execute(pinCode,"imperial", "7");
-        }
-        else {
-            task.execute(pinCode, "metric", "7");
-        }
+        String pinCode = sharedPref.getString(LOCATION, LOCATION_ZIP_CODE);
+        String unit = sharedPref.getString("unit_list", "metric");
+        task.execute(pinCode, unit, SEVEN_DAYS);
     }
 
     @Override
@@ -98,14 +95,14 @@ public class MainActivityFragment extends Fragment {
         final ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
         listView.setAdapter(arrayAdapter);
 
-listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        //Toast.makeText(getActivity(),arrayAdapter.getItem(position),Toast.LENGTH_SHORT).show();
-        Intent detail = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT,arrayAdapter.getItem(position));
-        startActivity(detail);
-    }
-});
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Toast.makeText(getActivity(),arrayAdapter.getItem(position),Toast.LENGTH_SHORT).show();
+                Intent detail = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, arrayAdapter.getItem(position));
+                startActivity(detail);
+            }
+        });
         return rootView;
     }
 
@@ -132,19 +129,8 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
                 //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q="+ params[0]+"&mode=json&units=metric&cnt=7&appid=44db6a862fba0b067b1930da0d769e98");
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme("http")
-                        .authority("api.openweathermap.org")
-                        .appendPath("data")
-                        .appendPath("2.5")
-                        .appendPath("forecast")
-                        .appendPath("daily")
-                        .appendQueryParameter("q",params[0])
-                        .appendQueryParameter("mode","json")
-                        .appendQueryParameter("units",params[1])
-                        .appendQueryParameter("cnt", params[2])
-                        .appendQueryParameter("appid", "44db6a862fba0b067b1930da0d769e98");
-                URL url = new URL(builder.build().toString());
+                Uri uri = buildFetchWeatherUri(params);
+                URL url = new URL(uri.toString());
                 Log.v(LOG_TAG, "" + url.toString());
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -175,6 +161,7 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 forecastJsonStr = buffer.toString();
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
+                Toast.makeText(getActivity(), "Check your Internet Connectivity", Toast.LENGTH_LONG).show();
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
@@ -191,16 +178,31 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 }
             }
             try {
-                return getWeatherDataFromJson(forecastJsonStr,Integer.parseInt(params[2]));
-            }
-            catch (JSONException ex)
-            {
-                Log.e(LOG_TAG, ex.getMessage(),ex);
+                return getWeatherDataFromJson(forecastJsonStr, Integer.parseInt(params[2]));
+            } catch (JSONException ex) {
+                Log.e(LOG_TAG, ex.getMessage(), ex);
                 ex.printStackTrace();
             }
             return null;
         }
+
+        private Uri buildFetchWeatherUri(String[] params) {
+            return new Uri.Builder().
+                    scheme("http")
+                    .authority("api.openweathermap.org")
+                    .appendPath("data")
+                    .appendPath("2.5")
+                    .appendPath("forecast")
+                    .appendPath("daily")
+                    .appendQueryParameter("q", params[0])
+                    .appendQueryParameter("mode", "json")
+                    .appendQueryParameter("units", params[1])
+                    .appendQueryParameter("cnt", params[2])
+                    .appendQueryParameter("appid", "44db6a862fba0b067b1930da0d769e98")
+                    .build();
+        }
     }
+
     private String formatHighLows(double high, double low) {
         // For presentation, assume the user doesn't care about tenths of a degree.
         long roundedHigh = Math.round(high);
@@ -213,7 +215,7 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
-     *
+     * <p/>
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
@@ -232,7 +234,7 @@ listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
         String[] resultStrs = new String[numDays];
-        for(int i = 0; i < weatherArray.length(); i++) {
+        for (int i = 0; i < weatherArray.length(); i++) {
             // For now, using the format "Day, description, hi/low"
             String day;
             String description;

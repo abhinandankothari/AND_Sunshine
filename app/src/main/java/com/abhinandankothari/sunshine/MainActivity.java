@@ -76,12 +76,16 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
-                Log.d("ERROR OPENING MAP", "MAP NOT FOUND");
+                logNoMapFoundError();
             }
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void logNoMapFoundError() {
+        Log.d("ERROR OPENING MAP", "MAP NOT FOUND");
     }
 }
 
