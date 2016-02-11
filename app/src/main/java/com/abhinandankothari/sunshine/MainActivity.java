@@ -1,8 +1,11 @@
 package com.abhinandankothari.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -61,6 +64,20 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             Intent settings = new Intent(this,SettingsActivity.class);
             startActivity(settings);
+            return true;
+        }
+        if (id == R.id.action_map) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            String city = sharedPref.getString("city", "Indore");
+            String geoLocation = "geo:0,0?q="+ city ;
+            Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse(geoLocation));
+            if((intent.resolveActivity(getPackageManager())!= null)) {
+                startActivity(intent);
+            }
+            else
+            {
+                Log.d("ERROR OPENING MAP", "MAP NOT FOUND");
+            }
             return true;
         }
 
