@@ -198,7 +198,7 @@ public class MainActivityFragment extends Fragment {
                     .appendQueryParameter("mode", "json")
                     .appendQueryParameter("units", params[1])
                     .appendQueryParameter("cnt", params[2])
-                    .appendQueryParameter("appid", "44db6a862fba0b067b1930da0d769e98")
+                    .appendQueryParameter("appid", "97fc575f1a4983fa01622792df640aa9")
                     .build();
         }
     }
